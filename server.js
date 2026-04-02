@@ -72,10 +72,10 @@ app.post('/api/orders', (req, res) => {
   writeDB(db);
 
   // 🔥 TELEGRAM ON ORDER
-  const BOT_TOKEN = '8625617886:AAFdaeB1r4dQ9d9ao1GY7NOyba5eDPz6glo'; // 🔁 put your token here
+  const BOT_TOKEN = process.env.BOT_TOKEN; // 🔁 put your token here
   const CHAT_ID = '1411827354';
 
-  axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+  await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     chat_id: CHAT_ID,
     text: `🛒 New Order!\nName: ${customerName}\nTotal: ₹${total}`
   });
@@ -104,7 +104,7 @@ app.put('/api/orders/:id', async (req, res) => {
 
   // 🔥 TELEGRAM ON DELIVERY
   if (newStatus === 'Delivered') {
-    const BOT_TOKEN = '8625617886:AAFdaeB1r4dQ9d9ao1GY7NOyba5eDPz6glo'; // 🔁 same token here
+    const BOT_TOKEN = process.env.BOT_TOKEN; // 🔁 same token here
     const CHAT_ID = '1411827354';
 
     const order = db.orders[index];
@@ -119,7 +119,7 @@ app.put('/api/orders/:id', async (req, res) => {
 });
 
 // ─── ADMIN LOGIN ─────────────────────────────────
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/orders', async (req, res) => {
   const db = readDB();
   const { username, password } = req.body;
 
