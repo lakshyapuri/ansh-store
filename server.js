@@ -49,7 +49,7 @@ app.get('/api/products', (req, res) => {
 });
 
 // ─── CREATE ORDER ─────────────────────────────────
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
   const db = readDB();
   const { customerName, address, phone, items, total } = req.body;
 
@@ -72,13 +72,22 @@ app.post('/api/orders', (req, res) => {
   writeDB(db);
 
   // 🔥 TELEGRAM ON ORDER
-  const BOT_TOKEN = process.env.BOT_TOKEN; // 🔁 put your token here
-  const CHAT_ID = '1411827354';
+  try {
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+    const CHAT_ID = '1411827354';
 
-  await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-    chat_id: CHAT_ID,
-    text: `🛒 New Order!\nName: ${customerName}\nTotal: ₹${total}`
-  });
+    if (BOT_TOKEN) {
+      await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        chat_id: CHAT_ID,
+        text: `🛒 New Order!\nName: ${customerName}\nTotal: ₹${total}`
+      });
+      console.log("✅ Telegram order sent");
+    } else {
+      console.log("⚠️ BOT_TOKEN missing");
+    }
+  } catch (err) {
+    console.log("❌ Telegram error:", err.message);
+  }
 
   res.json({ success: true, data: order });
 });
@@ -104,22 +113,29 @@ app.put('/api/orders/:id', async (req, res) => {
 
   // 🔥 TELEGRAM ON DELIVERY
   if (newStatus === 'Delivered') {
-    const BOT_TOKEN = process.env.BOT_TOKEN; // 🔁 same token here
-    const CHAT_ID = '1411827354';
+    try {
+      const BOT_TOKEN = process.env.BOT_TOKEN;
+      const CHAT_ID = '1411827354';
 
-    const order = db.orders[index];
+      const order = db.orders[index];
 
-    await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      chat_id: CHAT_ID,
-      text: `🚚 Delivered!\nName: ${order.customerName}\nTotal: ₹${order.total}`
-    });
+      if (BOT_TOKEN) {
+        await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          chat_id: CHAT_ID,
+          text: `🚚 Delivered!\nName: ${order.customerName}\nTotal: ₹${order.total}`
+        });
+        console.log("📲 Delivered message sent");
+      }
+    } catch (err) {
+      console.log("❌ Telegram error:", err.message);
+    }
   }
 
   res.json({ success: true, data: db.orders[index] });
 });
 
 // ─── ADMIN LOGIN ─────────────────────────────────
-app.post('/api/orders', async (req, res) => {
+app.post('/api/admin/login', (req, res) => {
   const db = readDB();
   const { username, password } = req.body;
 
@@ -140,4 +156,4 @@ app.get('/', (req, res) => {
 // ─── START SERVER ─────────────────────────────────
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
-});
+}); 
