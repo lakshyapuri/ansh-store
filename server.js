@@ -1,7 +1,3 @@
-/**
- * Ansh Provisional Store - Backend Server
- */
-
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -11,120 +7,93 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ─── Middleware ─────────────────────────────────
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(__dirname));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// ─── Data Setup ─────────────────────────────────
-const DATA_FILE = path.join(__dirname, 'data', 'db.json');
-
-if (!fs.existsSync(path.join(__dirname, 'data'))) {
-  fs.mkdirSync(path.join(__dirname, 'data'));
-}
-if (!fs.existsSync(path.join(__dirname, 'uploads'))) {
-  fs.mkdirSync(path.join(__dirname, 'uploads'));
-}
+// ─── DATA ─────────────────
+const DATA_FILE = path.join(__dirname, 'db.json');
 
 if (!fs.existsSync(DATA_FILE)) {
-  const seedData = {
+  fs.writeFileSync(DATA_FILE, JSON.stringify({
     products: [
-      { id: '1', name: 'Basmati Rice (5kg)', category: 'Grains & Staples', price: 320, description: '', image: null, stock: 50, featured: true, createdAt: new Date().toISOString() }
+      { id: '1', name: 'Rice', price: 100 }
     ],
     orders: [],
     adminCredentials: { username: 'admin', password: 'ansh123' }
-  };
-  fs.writeFileSync(DATA_FILE, JSON.stringify(seedData, null, 2));
+  }));
 }
 
-const readDB = () => JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+const readDB = () => JSON.parse(fs.readFileSync(DATA_FILE));
 const writeDB = (data) => fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 
-// ─── PRODUCTS ─────────────────────────────────
+// ─── PRODUCTS ─────────────────
 app.get('/api/products', (req, res) => {
   const db = readDB();
   res.json({ success: true, data: db.products });
 });
 
-// ─── CREATE ORDER ─────────────────────────────────
-app.post('/api/orders', async (req, res) => {
+// ─── CREATE ORDER ─────────────────
+app.post('/api/orders', (req, res) => {
   const db = readDB();
-  const { customerName, address, phone, items, total } = req.body;
-
-  if (!customerName || !address || !phone || !items || items.length === 0) {
-    return res.status(400).json({ success: false });
-  }
+  const { customerName, phone, address, items, total } = req.body;
 
   const order = {
     id: 'ORD-' + Date.now(),
     customerName,
-    address,
     phone,
+    address,
     items,
     total,
-    status: 'Pending',
-    createdAt: new Date().toISOString()
+    status: 'Pending'
   };
 
   db.orders.push(order);
   writeDB(db);
 
-  // 🔥 TELEGRAM ON ORDER
-  // 🔥 TELEGRAM ON ORDER (SAFE VERSION)
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const CHAT_ID = '1411827354';
+  const BOT_TOKEN = process.env.BOT_TOKEN;
+  const CHAT_ID = '1411827354';
 
-if (BOT_TOKEN) {
-  axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-    chat_id: CHAT_ID,
-    text: `🛒 New Order!\nName: ${customerName}\nTotal: ₹${total}`
-  })
-  .then(() => console.log("✅ Telegram order sent"))
-  .catch(err => console.log("❌ Telegram error:", err.message));
-} else {
-  console.log("⚠️ BOT_TOKEN missing");
-}
+  if (BOT_TOKEN) {
+    axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      chat_id: CHAT_ID,
+      text: `🛒 New Order!\n${customerName} - ₹${total}`
+    }).catch(() => {});
+  }
 
-  res.json({ success: true, data: order });
+  res.json({ success: true });
 });
 
-// ─── GET ORDERS ─────────────────────────────────
+// ─── GET ORDERS ─────────────────
 app.get('/api/orders', (req, res) => {
   const db = readDB();
   res.json({ success: true, data: db.orders });
 });
 
-// ─── UPDATE ORDER STATUS ─────────────────────────────────
-app.put('/api/orders/:id', async (req, res) => {
+// ─── UPDATE STATUS ─────────────────
+app.put('/api/orders/:id', (req, res) => {
   const db = readDB();
-  const index = db.orders.findIndex(o => o.id === req.params.id);
+  const order = db.orders.find(o => o.id === req.params.id);
 
-  if (index === -1) {
-    return res.status(404).json({ success: false });
-  }
+  if (!order) return res.json({ success: false });
 
-  const newStatus = req.body.status;
-  db.orders[index].status = newStatus;
+  order.status = req.body.status;
   writeDB(db);
 
-  // 🔥 TELEGRAM ON DELIVERY (SAFE VERSION)
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const CHAT_ID = '1411827354';
+  const BOT_TOKEN = process.env.BOT_TOKEN;
+  const CHAT_ID = '1411827354';
 
-const order = db.orders[index]; // ✅ FIX ADDED
+  if (order.status === 'Delivered' && BOT_TOKEN) {
+    axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      chat_id: CHAT_ID,
+      text: `🚚 Delivered: ${order.customerName}`
+    }).catch(() => {});
+  }
 
-if (BOT_TOKEN) {
-  axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-    chat_id: CHAT_ID,
-    text: `🚚 Delivered!\nName: ${order.customerName}\nTotal: ₹${order.total}`
-  })
-  .then(() => console.log("📲 Delivered message sent"))
-  .catch(err => console.log("❌ Telegram error:", err.message));
-}
+  res.json({ success: true });
+});
 
-// ─── ADMIN LOGIN ─────────────────────────────────
+// ─── ADMIN LOGIN ─────────────────
 app.post('/api/admin/login', (req, res) => {
   const db = readDB();
   const { username, password } = req.body;
@@ -132,18 +101,11 @@ app.post('/api/admin/login', (req, res) => {
   if (username === db.adminCredentials.username && password === db.adminCredentials.password) {
     res.json({ success: true });
   } else {
-    res.status(401).json({ success: false });
+    res.json({ success: false });
   }
 });
 
-// ─── FRONTEND ─────────────────────────────────
-app.use(express.static(__dirname));
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// ─── START SERVER ─────────────────────────────────
+// ─── START ─────────────────
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-}); 
+  console.log(`Server running on ${PORT}`);
+});
