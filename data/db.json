@@ -1,0 +1,269 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "name": "Basmati Rice (5kg)",
+      "category": "Grains & Staples",
+      "price": 320,
+      "description": "Premium long-grain basmati rice, aromatic and fluffy when cooked.",
+      "image": null,
+      "stock": 50,
+      "featured": true,
+      "createdAt": "2026-04-02T16:32:04.843Z"
+    },
+    {
+      "id": "2",
+      "name": "Toor Dal (1kg)",
+      "category": "Pulses & Lentils",
+      "price": 140,
+      "description": "High-quality toor dal, rich in protein and essential nutrients.",
+      "image": null,
+      "stock": 80,
+      "featured": true,
+      "createdAt": "2026-04-02T16:32:04.844Z"
+    },
+    {
+      "id": "3",
+      "name": "Amul Butter (500g)",
+      "category": "Dairy & Eggs",
+      "price": 260,
+      "description": "Fresh and creamy Amul butter, perfect for cooking and spreading.",
+      "image": null,
+      "stock": 30,
+      "featured": true,
+      "createdAt": "2026-04-02T16:32:04.844Z"
+    },
+    {
+      "id": "4",
+      "name": "Aashirvaad Atta (10kg)",
+      "category": "Grains & Staples",
+      "price": 450,
+      "description": "Whole wheat flour for soft rotis, rich in fiber.",
+      "image": null,
+      "stock": 40,
+      "featured": false,
+      "createdAt": "2026-04-02T16:32:04.844Z"
+    },
+    {
+      "id": "5",
+      "name": "Haldiram Namkeen Mix (400g)",
+      "category": "Snacks",
+      "price": 85,
+      "description": "Crunchy and spicy mixed snack, great for teatime.",
+      "image": null,
+      "stock": 60,
+      "featured": true,
+      "createdAt": "2026-04-02T16:32:04.844Z"
+    },
+    {
+      "id": "6",
+      "name": "Coca-Cola (2L)",
+      "category": "Beverages",
+      "price": 90,
+      "description": "Chilled refreshing cola drink for the whole family.",
+      "image": null,
+      "stock": 45,
+      "featured": false,
+      "createdAt": "2026-04-02T16:32:04.844Z"
+    },
+    {
+      "id": "7",
+      "name": "Surf Excel Detergent (2kg)",
+      "category": "Household",
+      "price": 320,
+      "description": "Powerful laundry detergent that removes tough stains.",
+      "image": null,
+      "stock": 25,
+      "featured": false,
+      "createdAt": "2026-04-02T16:32:04.844Z"
+    },
+    {
+      "id": "8",
+      "name": "Maggi Noodles (Pack of 12)",
+      "category": "Snacks",
+      "price": 180,
+      "description": "Quick 2-minute noodles loved by all ages.",
+      "image": null,
+      "stock": 100,
+      "featured": true,
+      "createdAt": "2026-04-02T16:32:04.844Z"
+    },
+    {
+      "id": "9",
+      "name": "Sunflower Oil (1L)",
+      "category": "Oils & Spices",
+      "price": 145,
+      "description": "Light and healthy sunflower cooking oil, low in cholesterol.",
+      "image": null,
+      "stock": 55,
+      "featured": false,
+      "createdAt": "2026-04-02T16:32:04.844Z"
+    },
+    {
+      "id": "10",
+      "name": "Tropicana Orange Juice (1L)",
+      "category": "Beverages",
+      "price": 120,
+      "description": "100% pure orange juice with no added sugar.",
+      "image": null,
+      "stock": 35,
+      "featured": false,
+      "createdAt": "2026-04-02T16:32:04.844Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-1775148485885",
+      "customerName": "lakshya",
+      "address": "samba",
+      "phone": "7051544964",
+      "items": [
+        {
+          "id": "3",
+          "name": "Amul Butter (500g)",
+          "price": 260,
+          "image": null,
+          "category": "Dairy & Eggs",
+          "qty": 1
+        },
+        {
+          "id": "5",
+          "name": "Haldiram Namkeen Mix (400g)",
+          "price": 85,
+          "image": null,
+          "category": "Snacks",
+          "qty": 1
+        }
+      ],
+      "total": 345,
+      "status": "Accepted",
+      "createdAt": "2026-04-02T16:48:05.885Z"
+    },
+    {
+      "id": "ORD-1775161362472",
+      "customerName": "lakshya",
+      "address": "samba",
+      "phone": "7051544964",
+      "items": [
+        {
+          "id": "5",
+          "name": "Haldiram Namkeen Mix (400g)",
+          "price": 85,
+          "image": null,
+          "category": "Snacks",
+          "qty": 1
+        }
+      ],
+      "total": 85,
+      "status": "Delivered",
+      "createdAt": "2026-04-02T20:22:42.472Z"
+    },
+    {
+      "id": "ORD-1775165162283",
+      "customerName": "laksjya",
+      "address": "adckmcs",
+      "phone": "7051544964",
+      "items": [
+        {
+          "id": "2",
+          "name": "Toor Dal (1kg)",
+          "price": 140,
+          "image": null,
+          "category": "Pulses & Lentils",
+          "qty": 1
+        },
+        {
+          "id": "3",
+          "name": "Amul Butter (500g)",
+          "price": 260,
+          "image": null,
+          "category": "Dairy & Eggs",
+          "qty": 1
+        }
+      ],
+      "total": 400,
+      "status": "Delivered",
+      "createdAt": "2026-04-02T21:26:02.283Z"
+    },
+    {
+      "id": "ORD-1775165823785",
+      "customerName": "hero",
+      "address": "lakshya",
+      "phone": "6666666662",
+      "items": [
+        {
+          "id": "2",
+          "name": "Toor Dal (1kg)",
+          "price": 140,
+          "image": null,
+          "category": "Pulses & Lentils",
+          "qty": 1
+        }
+      ],
+      "total": 140,
+      "status": "Delivered",
+      "createdAt": "2026-04-02T21:37:03.785Z"
+    },
+    {
+      "id": "ORD-1775165918783",
+      "customerName": "lakshya",
+      "address": "bhsdch",
+      "phone": "7909287272",
+      "items": [
+        {
+          "id": "2",
+          "name": "Toor Dal (1kg)",
+          "price": 140,
+          "image": null,
+          "category": "Pulses & Lentils",
+          "qty": 1
+        }
+      ],
+      "total": 140,
+      "status": "Delivered",
+      "createdAt": "2026-04-02T21:38:38.783Z"
+    },
+    {
+      "id": "ORD-1775166193087",
+      "customerName": "laksya",
+      "address": "laoao",
+      "phone": "7051544964",
+      "items": [
+        {
+          "id": "2",
+          "name": "Toor Dal (1kg)",
+          "price": 140,
+          "image": null,
+          "category": "Pulses & Lentils",
+          "qty": 1
+        }
+      ],
+      "total": 140,
+      "status": "Pending",
+      "createdAt": "2026-04-02T21:43:13.087Z"
+    },
+    {
+      "id": "ORD-1775166914438",
+      "customerName": "ramu",
+      "address": "samba",
+      "phone": "7826336372",
+      "items": [
+        {
+          "id": "2",
+          "name": "Toor Dal (1kg)",
+          "price": 140,
+          "image": null,
+          "category": "Pulses & Lentils",
+          "qty": 1
+        }
+      ],
+      "total": 140,
+      "status": "Pending",
+      "createdAt": "2026-04-02T21:55:14.438Z"
+    }
+  ],
+  "adminCredentials": {
+    "username": "admin",
+    "password": "ansh123"
+  }
+}

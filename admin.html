@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+</head>
+
+<body>
+
+<h2>Admin Login</h2>
+
+<input id="username" placeholder="Username"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+
+<button onclick="login()">Login</button>
+
+<hr>
+
+<div id="dashboard" style="display:none;">
+  <h2>📊 Orders</h2>
+  <div id="orders"></div>
+</div>
+
+<script>
+async function login() {
+  const res = await fetch('/api/admin/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      username: document.getElementById('username').value,
+      password: document.getElementById('password').value
+    })
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+    document.getElementById('dashboard').style.display = 'block';
+    loadOrders();
+  } else {
+    alert("Wrong login");
+  }
+}
+
+async function loadOrders(){
+  const res = await fetch('/api/orders');
+  const data = await res.json();
+
+  const ordersHTML = data.data.map(order => `
+    <div style="border:1px solid #000; padding:10px; margin:10px;">
+      <b>Name:</b> ${order.customerName}<br>
+      <b>Phone:</b> ${order.phone}<br>
+      <b>Address:</b> ${order.address}<br>
+      <b>Total:</b> ₹${order.total}<br>
+      <b>Status:</b> ${order.status}<br><br>
+
+      <button onclick="updateStatus('${order.id}', 'Accepted')">✅ Accept</button>
+      <button onclick="updateStatus('${order.id}', 'Delivered')">🚚 Deliver</button>
+    </div>
+  `).join('');
+
+  document.getElementById('orders').innerHTML = ordersHTML;
+}
+
+async function updateStatus(id, status) {
+  await fetch('/api/orders/' + id, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ status })
+  });
+
+  loadOrders();
+}
+</script>
+
+</body>
+</html>
