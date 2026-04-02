@@ -72,22 +72,20 @@ app.post('/api/orders', async (req, res) => {
   writeDB(db);
 
   // 🔥 TELEGRAM ON ORDER
-  try {
-    const BOT_TOKEN = process.env.BOT_TOKEN;
-    const CHAT_ID = '1411827354';
+  // 🔥 TELEGRAM ON ORDER (SAFE VERSION)
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const CHAT_ID = '1411827354';
 
-    if (BOT_TOKEN) {
-      await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        chat_id: CHAT_ID,
-        text: `🛒 New Order!\nName: ${customerName}\nTotal: ₹${total}`
-      });
-      console.log("✅ Telegram order sent");
-    } else {
-      console.log("⚠️ BOT_TOKEN missing");
-    }
-  } catch (err) {
-    console.log("❌ Telegram error:", err.message);
-  }
+if (BOT_TOKEN) {
+  axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    chat_id: CHAT_ID,
+    text: `🛒 New Order!\nName: ${customerName}\nTotal: ₹${total}`
+  })
+  .then(() => console.log("✅ Telegram order sent"))
+  .catch(err => console.log("❌ Telegram error:", err.message));
+} else {
+  console.log("⚠️ BOT_TOKEN missing");
+}
 
   res.json({ success: true, data: order });
 });
@@ -111,28 +109,20 @@ app.put('/api/orders/:id', async (req, res) => {
   db.orders[index].status = newStatus;
   writeDB(db);
 
-  // 🔥 TELEGRAM ON DELIVERY
-  if (newStatus === 'Delivered') {
-    try {
-      const BOT_TOKEN = process.env.BOT_TOKEN;
-      const CHAT_ID = '1411827354';
+  // 🔥 TELEGRAM ON DELIVERY (SAFE VERSION)
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const CHAT_ID = '1411827354';
 
-      const order = db.orders[index];
+const order = db.orders[index]; // ✅ FIX ADDED
 
-      if (BOT_TOKEN) {
-        await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-          chat_id: CHAT_ID,
-          text: `🚚 Delivered!\nName: ${order.customerName}\nTotal: ₹${order.total}`
-        });
-        console.log("📲 Delivered message sent");
-      }
-    } catch (err) {
-      console.log("❌ Telegram error:", err.message);
-    }
-  }
-
-  res.json({ success: true, data: db.orders[index] });
-});
+if (BOT_TOKEN) {
+  axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    chat_id: CHAT_ID,
+    text: `🚚 Delivered!\nName: ${order.customerName}\nTotal: ₹${order.total}`
+  })
+  .then(() => console.log("📲 Delivered message sent"))
+  .catch(err => console.log("❌ Telegram error:", err.message));
+}
 
 // ─── ADMIN LOGIN ─────────────────────────────────
 app.post('/api/admin/login', (req, res) => {
