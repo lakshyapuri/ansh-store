@@ -1,44 +1,72 @@
-<button onclick="payNow()">Place Order</button>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Basic -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<script>
-async function payNow() {
+    <!-- Title -->
+    <title>Ansh Provisional Store 🛒</title>
 
-  if(cart.length === 0){
-    alert("Cart is empty ❌");
-    return;
-  }
+    <!-- SEO -->
+    <meta
+      name="description"
+      content="Buy groceries online from Ansh Provisional Store. Fast, reliable, and affordable delivery."
+    />
+    <meta name="theme-color" content="#27ae60" />
 
-  const customerName = prompt("Enter your name");
-  const phone = prompt("Enter phone");
-  const address = prompt("Enter address");
+    <!-- Favicon -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
 
-  if(!customerName || !phone || !address){
-    alert("All fields required ❌");
-    return;
-  }
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+    <!-- Custom Styling -->
+    <style>
+      body {
+        margin: 0;
+        font-family: "Poppins", sans-serif;
+        background-color: #f5f7fa;
+        color: #2c3e50;
+      }
 
-  const res = await fetch('/api/orders', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      customerName,
-      phone,
-      address,
-      items: cart,
-      total
-    })
-  });
+      /* Loading screen */
+      #loader {
+        position: fixed;
+        width: 100%;
+        height: 100vh;
+        background: #27ae60;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 24px;
+        z-index: 9999;
+      }
+    </style>
+  </head>
 
-  const data = await res.json();
+  <body>
+    <!-- No JS fallback -->
+    <noscript>You need to enable JavaScript to run this app.</noscript>
 
-  if(data.success){
-    alert("✅ Order placed successfully!");
-    cart = [];
-    renderCart();
-  } else {
-    alert("❌ Order failed");
-  }
-}
-</script>
+    <!-- Loader -->
+    <div id="loader">Loading Ansh Store...</div>
+
+    <!-- React App Root -->
+    <div id="root"></div>
+
+    <!-- Script to remove loader after load -->
+    <script>
+      window.addEventListener("load", function () {
+        const loader = document.getElementById("loader");
+        if (loader) {
+          loader.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
