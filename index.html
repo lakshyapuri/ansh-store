@@ -1,107 +1,131 @@
 <script>
 /* ============================
-   CONFIG (IMPORTANT)
+   CONFIG
 ============================ */
-const API ='https://ansh-store.onrender.com/api';; // 🔴 CHANGE THIS
+const API = 'https://ansh-store.onrender.com/api';
 
 /* ============================
    STATE
 ============================ */
 let cart = JSON.parse(localStorage.getItem('anshCart') || '[]');
 let allProducts = [];
-let adminToken = sessionStorage.getItem('adminToken') || null;
 
 /* ============================
    INIT
 ============================ */
 document.addEventListener('DOMContentLoaded', () => {
-  updateCartUI();
   loadProducts();
+  updateCartUI();
 });
 
 /* ============================
    TOAST
 ============================ */
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = type === 'error' ? 'error show' : 'show';
-  setTimeout(() => t.classList.remove('show'), 3000);
+function showToast(msg, type='success'){
+  const t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg;
+  t.className= type==='error' ? 'error show':'show';
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 /* ============================
-   API HELPERS
+   API
 ============================ */
-async function apiGet(path) {
-  try {
-    const res = await fetch(API + path);
+async function apiGet(path){
+  try{
+    const res=await fetch(API+path);
     return await res.json();
-  } catch {
-    showToast("❌ Server not reachable", "error");
+  }catch{
+    showToast("Server error","error");
     return null;
   }
 }
-
-async function apiPost(path, body) {
-  try {
-    const res = await fetch(API + path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+async function apiPost(path,body){
+  try{
+    const res=await fetch(API+path,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)
     });
     return await res.json();
-  } catch {
-    showToast("❌ Failed to connect", "error");
+  }catch{
+    showToast("Server error","error");
     return null;
   }
 }
 
 /* ============================
-   PRODUCTS
+   LOAD PRODUCTS
 ============================ */
-async function loadProducts() {
-  const res = await apiGet('/products');
-  if (res && res.success) {
-    allProducts = res.data;
-    renderProducts(allProducts);
+async function loadProducts(){
+  const res=await apiGet('/products');
+  if(res && res.success){
+    allProducts=res.data;
+    renderProducts();
+  }else{
+    showToast("No products found","error");
   }
 }
 
-function renderProducts(products) {
-  const grid = document.getElementById('shopGrid');
-  if (!grid) return;
+/* ============================
+   RENDER PRODUCTS
+============================ */
+function renderProducts(){
+  const shopGrid=document.getElementById('shopGrid');
+  const featuredGrid=document.getElementById('featuredGrid');
 
-  grid.innerHTML = products.map(p => `
-    <div class="product-card">
-      <div class="card-body">
-        <h3>${p.name}</h3>
-        <p>₹${p.price}</p>
-        <button onclick="addToCart('${p._id || p.id}')">Add</button>
+  if(shopGrid){
+    shopGrid.innerHTML=allProducts.map(p=>`
+      <div class="product-card">
+        <div class="img-wrap">
+          ${p.image ? `<img src="${p.image}"/>` : `<div class="no-img">📦</div>`}
+        </div>
+        <div class="card-body">
+          <div class="card-name">${p.name}</div>
+          <div class="card-price">₹${p.price}</div>
+          <button class="add-to-cart-btn" onclick="addToCart('${p._id || p.id}')">Add</button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `).join('');
+  }
+
+  if(featuredGrid){
+    const featured=allProducts.filter(p=>p.featured);
+    featuredGrid.innerHTML=featured.map(p=>`
+      <div class="product-card">
+        <div class="img-wrap">
+          ${p.image ? `<img src="${p.image}"/>` : `<div class="no-img">⭐</div>`}
+        </div>
+        <div class="card-body">
+          <div class="card-name">${p.name}</div>
+          <div class="card-price">₹${p.price}</div>
+        </div>
+      </div>
+    `).join('');
+  }
 }
 
 /* ============================
    ADD PRODUCT (ADMIN)
 ============================ */
-async function submitProduct(e) {
+async function submitProduct(e){
   e.preventDefault();
 
-  const product = {
-    name: document.getElementById('pName').value,
-    category: document.getElementById('pCat').value,
-    price: Number(document.getElementById('pPrice').value),
-    stock: Number(document.getElementById('pStock').value || 0),
-    description: document.getElementById('pDesc').value,
-    image: document.getElementById('pImageData').value,
-    featured: document.getElementById('pFeatured').checked
+  const product={
+    name:pName.value,
+    category:pCat.value,
+    price:Number(pPrice.value),
+    stock:Number(pStock.value||0),
+    description:pDesc.value,
+    image:pImageData.value,
+    featured:pFeatured.checked
   };
 
-  const res = await apiPost('/products', product);
+  const res=await apiPost('/products',product);
 
-  if (res && res.success) {
-    showToast("✅ Product Added");
+  if(res && res.success){
+    showToast("Product added");
     loadProducts();
     closeModal();
   }
@@ -110,69 +134,61 @@ async function submitProduct(e) {
 /* ============================
    CART
 ============================ */
-function saveCart() {
-  localStorage.setItem('anshCart', JSON.stringify(cart));
+function saveCart(){
+  localStorage.setItem('anshCart',JSON.stringify(cart));
 }
 
-function addToCart(id) {
-  const product = allProducts.find(p => p._id === id || p.id === id);
-  if (!product) return;
+function addToCart(id){
+  const p=allProducts.find(x=>x._id===id||x.id===id);
+  if(!p) return;
 
-  const exist = cart.find(i => i.id === id);
-
-  if (exist) exist.qty++;
-  else {
-    cart.push({
-      id,
-      name: product.name,
-      price: product.price,
-      qty: 1
-    });
-  }
+  const ex=cart.find(i=>i.id===id);
+  if(ex) ex.qty++;
+  else cart.push({id,name:p.name,price:p.price,qty:1});
 
   saveCart();
   updateCartUI();
-  showToast("🛒 Added to cart");
+  showToast("Added to cart");
 }
 
-function updateCartUI() {
-  const count = cart.reduce((s, i) => s + i.qty, 0);
-  document.querySelectorAll('.cart-count').forEach(el => el.textContent = count);
+function updateCartUI(){
+  const count=cart.reduce((s,i)=>s+i.qty,0);
+  document.querySelectorAll('.cart-count').forEach(el=>el.textContent=count);
 }
 
 /* ============================
-   ORDER (TELEGRAM TRIGGER)
+   ORDER
 ============================ */
-async function placeOrder() {
-  const name = document.getElementById('cName').value;
-  const address = document.getElementById('cAddr').value;
-  const phone = document.getElementById('cPhone').value;
+async function placeOrder(){
+  const name=cName.value;
+  const address=cAddr.value;
+  const phone=cPhone.value;
 
-  if (!name || !address || !phone) {
-    showToast("⚠️ Fill all fields", "error");
+  if(!name||!address||!phone){
+    showToast("Fill all fields","error");
     return;
   }
 
-  const order = {
-    customerName: name,
+  const order={
+    customerName:name,
     address,
     phone,
-    items: cart,
-    total: cart.reduce((s, i) => s + i.price * i.qty, 0)
+    items:cart,
+    total:cart.reduce((s,i)=>s+i.price*i.qty,0)
   };
 
-  const res = await apiPost('/orders', order);
+  const res=await apiPost('/orders',order);
 
-  if (res && res.success) {
-    showToast("✅ Order placed!");
+  if(res && res.success){
+    showToast("Order placed");
 
-    cart = [];
+    cart=[];
     saveCart();
     updateCartUI();
 
-    document.getElementById('checkoutContent').innerHTML = `
-      <h2>🎉 Order Successful</h2>
-      <p>Thank you for ordering!</p>
+    checkoutContent.innerHTML=`
+      <h2>Order Successful</h2>
+      <p>Thank you!</p>
     `;
   }
 }
@@ -180,13 +196,17 @@ async function placeOrder() {
 /* ============================
    IMAGE UPLOAD
 ============================ */
-function handleImageUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
+function handleImageUpload(e){
+  const file=e.target.files[0];
+  if(!file) return;
 
-  const reader = new FileReader();
-  reader.onload = function () {
-    document.getElementById('pImageData').value = reader.result;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    pImageData.value=reader.result;
+    if(imgPreview){
+      imgPreview.src=reader.result;
+      imgPreview.classList.remove('hidden');
+    }
   };
   reader.readAsDataURL(file);
 }
