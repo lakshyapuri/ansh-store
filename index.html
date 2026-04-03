@@ -1,222 +1,44 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Ansh Provisional Store</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #f5f5f5;
-    }
-
-    /* NAVBAR */
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 20px;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .logo {
-      font-size: 20px;
-      font-weight: bold;
-      color: #27ae60;
-    }
-
-    .nav-buttons button {
-      margin-left: 10px;
-      padding: 8px 12px;
-      border: none;
-      background: #27ae60;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    /* HERO */
-    .hero {
-      background: linear-gradient(to right, #27ae60, #2ecc71);
-      color: white;
-      text-align: center;
-      padding: 60px 20px;
-    }
-
-    .hero h1 {
-      font-size: 36px;
-      margin-bottom: 10px;
-    }
-
-    .hero p {
-      font-size: 16px;
-      opacity: 0.9;
-    }
-
-    .hero button {
-      margin-top: 20px;
-      padding: 12px 20px;
-      border: none;
-      background: white;
-      color: #27ae60;
-      font-weight: bold;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    /* PRODUCTS */
-    .section {
-      padding: 20px;
-    }
-
-    .products {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 15px;
-    }
-
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    .card h3 {
-      margin: 5px 0;
-    }
-
-    .price {
-      color: #27ae60;
-      font-weight: bold;
-    }
-
-    button.add {
-      background: #27ae60;
-      border: none;
-      padding: 10px;
-      color: white;
-      width: 100%;
-      border-radius: 5px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    /* CART */
-    #cart {
-      position: fixed;
-      right: 0;
-      top: 0;
-      width: 280px;
-      height: 100%;
-      background: white;
-      padding: 15px;
-      border-left: 2px solid #ddd;
-      overflow-y: auto;
-    }
-  </style>
-</head>
-
-<body>
-
-<!-- NAVBAR -->
-<div class="navbar">
-  <div class="logo">🛒 Ansh Store</div>
-  <div class="nav-buttons">
-    <button onclick="scrollToProducts()">Shop</button>
-  </div>
-</div>
-
-<!-- HERO -->
-<div class="hero">
-  <h1>Ansh Provisional Store</h1>
-  <p>Fresh groceries delivered to your doorstep 🚚</p>
-  <button onclick="scrollToProducts()">Shop Now</button>
-</div>
-
-<!-- PRODUCTS -->
-<div class="section">
-  <h2>⭐ Featured Products</h2>
-  <div class="products" id="products"></div>
-</div>
-
-<!-- CART -->
-<div id="cart">
-  <h3>🧺 Cart</h3>
-  <div id="cartItems"></div>
-  <h4 id="total">Total: ₹0</h4>
-  <button onclick="placeOrder()">Place Order</button>
-</div>
+<button onclick="payNow()">Place Order</button>
 
 <script>
-const API = '/api';
-let cart = [];
+async function payNow() {
 
-function scrollToProducts(){
-  window.scrollTo({ top: 400, behavior: 'smooth' });
-}
+  if(cart.length === 0){
+    alert("Cart is empty ❌");
+    return;
+  }
 
-// Load products
-async function loadProducts() {
-  const res = await fetch(API + '/products');
-  const data = await res.json();
-
-  const html = data.data.map(p => `
-    <div class="card">
-      <h3>${p.name}</h3>
-      <p class="price">₹${p.price}</p>
-      <button class="add" onclick="addToCart('${p.id}', '${p.name}', ${p.price})">Add to Cart</button>
-    </div>
-  `).join('');
-
-  document.getElementById('products').innerHTML = html;
-}
-
-// Add to cart
-function addToCart(id, name, price) {
-  const item = cart.find(i => i.id === id);
-
-  if (item) item.qty++;
-  else cart.push({ id, name, price, qty: 1 });
-
-  renderCart();
-}
-
-// Render cart
-function renderCart() {
-  const html = cart.map(i => `<p>${i.name} x${i.qty}</p>`).join('');
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-
-  document.getElementById('cartItems').innerHTML = html;
-  document.getElementById('total').innerText = "Total: ₹" + total;
-}
-
-// Place order
-function placeOrder() {
-  if (cart.length === 0) return alert("Cart empty ❌");
-
-  const customerName = prompt("Enter name");
+  const customerName = prompt("Enter your name");
   const phone = prompt("Enter phone");
   const address = prompt("Enter address");
 
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  if(!customerName || !phone || !address){
+    alert("All fields required ❌");
+    return;
+  }
 
-  fetch(API + '/orders', {
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  const res = await fetch('/api/orders', {
     method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ customerName, phone, address, items: cart, total })
-  })
-  .then(res => res.json())
-  .then(() => {
-    alert("✅ Order placed!");
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      customerName,
+      phone,
+      address,
+      items: cart,
+      total
+    })
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+    alert("✅ Order placed successfully!");
     cart = [];
     renderCart();
-  });
+  } else {
+    alert("❌ Order failed");
+  }
 }
-
-loadProducts();
 </script>
-
-</body>
-</html>
