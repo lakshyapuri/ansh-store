@@ -1,72 +1,100 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ansh Provisional Store</title>
+  <title>Ansh Store</title>
+
   <style>
     body {
-      font-family: Arial;
       margin: 0;
-      background: #f5f5f5;
+      font-family: Arial;
+      background: #f8f8f8;
     }
 
     header {
-      background: #2ecc71;
+      background: #e23744;
       color: white;
       padding: 15px;
-      text-align: center;
       font-size: 22px;
+      text-align: center;
+      font-weight: bold;
     }
 
     .products {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
       padding: 20px;
     }
 
-    .product {
+    .card {
       background: white;
-      padding: 15px;
-      margin: 10px;
-      width: 200px;
       border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card h3 {
+      margin: 5px 0;
+    }
+
+    .price {
+      color: #e23744;
+      font-weight: bold;
     }
 
     button {
-      background: #2ecc71;
+      background: #e23744;
       border: none;
       padding: 10px;
       color: white;
       cursor: pointer;
-      margin-top: 10px;
       width: 100%;
       border-radius: 5px;
+      margin-top: 10px;
     }
 
     #cart {
       position: fixed;
       right: 0;
       top: 0;
-      width: 250px;
+      width: 280px;
       height: 100%;
       background: white;
-      padding: 10px;
-      border-left: 2px solid #ccc;
+      padding: 15px;
+      border-left: 2px solid #ddd;
       overflow-y: auto;
+    }
+
+    #cart h3 {
+      margin-top: 0;
+    }
+
+    .cart-item {
+      margin-bottom: 10px;
+    }
+
+    .total {
+      font-weight: bold;
+      margin-top: 10px;
     }
   </style>
 </head>
 
 <body>
 
-<header>🛒 Ansh Provisional Store</header>
+<header>🍔 Ansh Provisional Store</header>
 
 <div class="products" id="products"></div>
 
 <div id="cart">
   <h3>🧺 Cart</h3>
   <div id="cartItems"></div>
-  <h4 id="total">Total: ₹0</h4>
+  <div class="total" id="total">Total: ₹0</div>
   <button onclick="placeOrder()">Place Order</button>
 </div>
 
@@ -80,10 +108,10 @@ async function loadProducts() {
   const data = await res.json();
 
   const html = data.data.map(p => `
-    <div class="product">
-      <h4>${p.name}</h4>
-      <p>₹${p.price}</p>
-      <button onclick="addToCart('${p.id}', '${p.name}', ${p.price})">Add</button>
+    <div class="card">
+      <h3>${p.name}</h3>
+      <p class="price">₹${p.price}</p>
+      <button onclick="addToCart('${p.id}', '${p.name}', ${p.price})">Add to Cart</button>
     </div>
   `).join('');
 
@@ -106,7 +134,9 @@ function addToCart(id, name, price) {
 // Render cart
 function renderCart() {
   const html = cart.map(i => `
-    <p>${i.name} x${i.qty}</p>
+    <div class="cart-item">
+      ${i.name} x${i.qty}
+    </div>
   `).join('');
 
   const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
@@ -151,7 +181,7 @@ function placeOrder() {
   });
 }
 
-// Load products on start
+// Start
 loadProducts();
 </script>
 
