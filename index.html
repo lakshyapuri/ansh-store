@@ -1,151 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ansh Provisional Store</title>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #f5f5f5;
+    }
 
-/**
- * Ansh Provisional Store - Backend Server
- */
+    header {
+      background: #2ecc71;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+    }
 
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
-const axios = require('axios');
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 20px;
+    }
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+    .product {
+      background: white;
+      padding: 15px;
+      margin: 10px;
+      width: 200px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
 
-// ─── Middleware ─────────────────────────────────
-app.use(cors());
-app.use(express.json());
-app.use(express.static(__dirname));
+    button {
+      background: #2ecc71;
+      border: none;
+      padding: 10px;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+      width: 100%;
+      border-radius: 5px;
+    }
 
-// ─── Data Setup ─────────────────────────────────
-const DATA_FILE = path.join(__dirname, 'db.json');
+    #cart {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 250px;
+      height: 100%;
+      background: white;
+      padding: 10px;
+      border-left: 2px solid #ccc;
+      overflow-y: auto;
+    }
+  </style>
+</head>
 
-if (!fs.existsSync(DATA_FILE)) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify({
-    products: [
-      { id: '1', name: 'Rice', price: 100 }
-    ],
-    orders: [],
-    adminCredentials: { username: 'admin', password: 'ansh123' }
-  }, null, 2));
+<body>
+
+<header>🛒 Ansh Provisional Store</header>
+
+<div class="products" id="products"></div>
+
+<div id="cart">
+  <h3>🧺 Cart</h3>
+  <div id="cartItems"></div>
+  <h4 id="total">Total: ₹0</h4>
+  <button onclick="placeOrder()">Place Order</button>
+</div>
+
+<script>
+const API = '/api';
+let cart = [];
+
+// Load products
+async function loadProducts() {
+  const res = await fetch(API + '/products');
+  const data = await res.json();
+
+  const html = data.data.map(p => `
+    <div class="product">
+      <h4>${p.name}</h4>
+      <p>₹${p.price}</p>
+      <button onclick="addToCart('${p.id}', '${p.name}', ${p.price})">Add</button>
+    </div>
+  `).join('');
+
+  document.getElementById('products').innerHTML = html;
 }
 
-const readDB = () => JSON.parse(fs.readFileSync(DATA_FILE));
-const writeDB = (data) => fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+// Add to cart
+function addToCart(id, name, price) {
+  const item = cart.find(i => i.id === id);
 
-// ─── PRODUCTS ─────────────────────────────────
-app.get('/api/products', (req, res) => {
-  const db = readDB();
-  res.json({ success: true, data: db.products });
-});
-
-// ─── CREATE ORDER ─────────────────────────────────
-app.post('/api/orders', (req, res) => {
-  const db = readDB();
-  const { customerName, phone, address, items, total } = req.body;
-
-  if (!customerName || !phone || !address || !items) {
-    return res.json({ success: false });
-  }
-
-  const order = {
-    id: 'ORD-' + Date.now(),
-    customerName,
-    phone,
-    address,
-    items,
-    total,
-    status: 'Pending',
-    createdAt: new Date().toISOString()
-  };
-
-  db.orders.push(order);
-  writeDB(db);
-
-  // 📲 TELEGRAM MESSAGE
-  const BOT_TOKEN = process.env.BOT_TOKEN;
-  const CHAT_ID = '1411827354';
-
-  if (BOT_TOKEN) {
-    const itemsText = items.map(i => `- ${i.name} x${i.qty}`).join('\n');
-
-    const message = `
-📦 Order ID: ${order.id}
-👤 Name: ${customerName}
-📞 Phone: ${phone}
-📍 Address: ${address}
-💰 Total: ₹${total}
-
-🧾 Items:
-${itemsText}
-`;
-
-    axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      chat_id: CHAT_ID,
-      text: message
-    })
-    .then(() => console.log("✅ Telegram order sent"))
-    .catch(err => console.log("❌ Telegram error:", err.message));
-  }
-
-  res.json({ success: true, data: order });
-});
-
-// ─── GET ORDERS ─────────────────────────────────
-app.get('/api/orders', (req, res) => {
-  const db = readDB();
-  res.json({ success: true, data: db.orders });
-});
-
-// ─── UPDATE ORDER STATUS ─────────────────────────────────
-app.put('/api/orders/:id', (req, res) => {
-  const db = readDB();
-  const order = db.orders.find(o => o.id === req.params.id);
-
-  if (!order) {
-    return res.json({ success: false });
-  }
-
-  order.status = req.body.status;
-  writeDB(db);
-
-  // 📲 TELEGRAM DELIVERY MESSAGE
-  const BOT_TOKEN = process.env.BOT_TOKEN;
-  const CHAT_ID = '1411827354';
-
-  if (order.status === 'Delivered' && BOT_TOKEN) {
-    const message = `
-🚚 Order Delivered!
-
-📦 Order ID: ${order.id}
-👤 Name: ${order.customerName}
-💰 Total: ₹${order.total}
-`;
-
-    axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      chat_id: CHAT_ID,
-      text: message
-    })
-    .then(() => console.log("📲 Delivered message sent"))
-    .catch(err => console.log("❌ Telegram error:", err.message));
-  }
-
-  res.json({ success: true });
-});
-
-// ─── ADMIN LOGIN ─────────────────────────────────
-app.post('/api/admin/login', (req, res) => {
-  const db = readDB();
-  const { username, password } = req.body;
-
-  if (username === db.adminCredentials.username && password === db.adminCredentials.password) {
-    res.json({ success: true });
+  if (item) {
+    item.qty++;
   } else {
-    res.json({ success: false });
+    cart.push({ id, name, price, qty: 1 });
   }
-});
 
-// ─── START SERVER ─────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
+  renderCart();
+}
+
+// Render cart
+function renderCart() {
+  const html = cart.map(i => `
+    <p>${i.name} x${i.qty}</p>
+  `).join('');
+
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  document.getElementById('cartItems').innerHTML = html;
+  document.getElementById('total').innerText = "Total: ₹" + total;
+}
+
+// Place order
+function placeOrder() {
+  if (cart.length === 0) {
+    alert("Cart is empty ❌");
+    return;
+  }
+
+  const customerName = prompt("Enter your name");
+  const phone = prompt("Enter phone");
+  const address = prompt("Enter address");
+
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+  fetch(API + '/orders', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      customerName,
+      phone,
+      address,
+      items: cart,
+      total
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("✅ Order placed!");
+      cart = [];
+      renderCart();
+    } else {
+      alert("❌ Order failed");
+    }
+  });
+}
+
+// Load products on start
+loadProducts();
+</script>
+
+</body>
+</html>

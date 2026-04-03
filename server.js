@@ -1,5 +1,5 @@
 /**
- * Ansh Provisional Store - Backend Server (FULL FINAL)
+ * Ansh Provisional Store - Backend Server (FINAL FIXED)
  */
 
 const express = require('express');
@@ -21,9 +21,7 @@ const DATA_FILE = path.join(__dirname, 'db.json');
 
 if (!fs.existsSync(DATA_FILE)) {
   fs.writeFileSync(DATA_FILE, JSON.stringify({
-    products: [
-      { id: '1', name: 'Rice', price: 100 }
-    ],
+    products: [{ id: '1', name: 'Rice', price: 100 }],
     orders: [],
     adminCredentials: { username: 'admin', password: 'ansh123' }
   }, null, 2));
@@ -40,7 +38,7 @@ app.get('/api/products', (req, res) => {
   res.json({ success: true, data: db.products });
 });
 
-// Add product
+// ✅ ADD PRODUCT (FIXED)
 app.post('/api/products', (req, res) => {
   const db = readDB();
   const { name, price } = req.body;
@@ -86,7 +84,7 @@ app.post('/api/orders', (req, res) => {
   db.orders.push(order);
   writeDB(db);
 
-  // 📲 TELEGRAM MESSAGE
+  // 📲 TELEGRAM MESSAGE (FIXED FORMAT)
   const BOT_TOKEN = process.env.BOT_TOKEN;
   const CHAT_ID = '1411827354';
 
@@ -119,7 +117,7 @@ app.get('/api/orders', (req, res) => {
   res.json({ success: true, data: db.orders });
 });
 
-// Update order status
+// Update status
 app.put('/api/orders/:id', (req, res) => {
   const db = readDB();
   const order = db.orders.find(o => o.id === req.params.id);
