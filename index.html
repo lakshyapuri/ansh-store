@@ -1250,10 +1250,42 @@ function renderCheckout() {
 }
 
 async function placeOrder() {
-  async function placeOrder() {
-  const name = document.getElementById('cName').value.trim();
-  const address = document.getElementById('cAddr').value.trim();
-  const phone = document.getElementById('cPhone').value.trim();
+  const name = document.getElementById('cName').value;
+  const address = document.getElementById('cAddr').value;
+  const phone = document.getElementById('cPhone').value;
+
+  if (!name || !address || !phone) {
+    showToast("❌ Fill all details", "error");
+    return;
+  }
+
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+  const res = await apiPost('/orders', {
+    customerName: name,
+    address,
+    phone,
+    items: cart,
+    total
+  });
+
+  if (res.success) {
+    cart = [];
+    saveCart();
+    updateCartUI();
+
+    document.getElementById('checkoutContent').innerHTML = `
+      <div class="success-box">
+        <div class="success-icon">🎉</div>
+        <h2>Order Placed!</h2>
+        <p>Your order has been successfully placed.</p>
+        <button class="btn-primary" onclick="showHome()">Back to Home</button>
+      </div>
+    `;
+  } else {
+    showToast("❌ Order failed", "error");
+  }
+}
 
   // Validate empty fields
   if (!name || !address || !phone) {
